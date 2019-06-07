@@ -23,6 +23,7 @@
                         <v-flex xs4><v-btn
                                 color="error"
                                 @click="fireSomePeople()"
+                                :disabled="selected.length == 0"
                         >{{ fireText }}</v-btn></v-flex>
                     </v-layout>
                 </v-container>
@@ -44,7 +45,7 @@
                                         v-model="props.selected"
                                         primary
                                         hide-details
-                                        :class="{'hideCheck': props.item.fireDate}"
+                                        :hidden="props.item.fireDate"
                                 ></v-checkbox>
                             </td>
                             <td class="text-xs-right">{{ props.item.name }}</td>
@@ -52,15 +53,15 @@
                             <td class="text-xs-right">{{ props.item.positionName }}</td>
                             <td class="text-xs-right">{{ dateHuman(props.item.hireDate) }}</td>
                             <td class="text-xs-right">{{ dateHuman(props.item.fireDate) }}</td>
-                            <td class="text-xs-right" @click.stop="!props.item.fireDate?salDial=true:salDial=false, salDialName=props.item.name">{{ props.item.salary }} ({{ props.item.fraction }}%)</td>
-                            <td class="text-xs-right" @click.stop="!props.item.fireDate?baseDial=true:baseDial=false, baseDialName=props.item.name">{{ props.item.base }}</td>
-                            <td class="text-xs-right" @click.stop="!props.item.fireDate?adDial=true:adDial=false, adDialName=props.item.name">{{ props.item.advance }}</td>
+                            <td class="text-xs-right" @click.stop="!props.item.fireDate?salDial=true:salDial=false, dialId=props.item.id, sal=props.item.salary, salPer=props.item.fraction">{{ props.item.salary }} ({{ props.item.fraction }}%)</td>
+                            <td class="text-xs-right" @click.stop="!props.item.fireDate?baseDial=true:baseDial=false, dialId=props.item.id, salBase=props.item.base">{{ props.item.base }}</td>
+                            <td class="text-xs-right" @click.stop="!props.item.fireDate?adDial=true:adDial=false, dialId=props.item.id, adv=props.item.advance">{{ props.item.advance }}</td>
                             <td class="text-xs-right">
                                 <v-checkbox
                                         v-model="props.item.byHours"
                                         hide-details
-                                        :class="{'hideCheck': props.item.fireDate}"
-                                        @change="switchByHour(props.item.name, props.item.byHours)"
+                                        :disabled="props.item.fireDate"
+                                        @change="switchByHour(props.item.id, props.item.byHours)"
                                 ></v-checkbox>
                             </td>
                         </tr>
@@ -83,10 +84,10 @@
                             <v-container grid-list-md>
                                 <v-layout wrap>
                                     <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="sal" :mask="'#######'" :rules="[()=>!!sal || 'This field is required']" :error-messages="errorMessages" label="Ставка, руб" required></v-text-field>
+                                        <v-text-field v-model="sal" :mask="'#######'" :rules="[()=>!!sal || 'This field is required']" label="Ставка, руб" required></v-text-field>
                                     </v-flex>
                                     <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="salPer" :mask="'###'" :rules="[()=>!!salPer || 'This field is required']" :error-messages="errorMessages" label="Ставка, %" required></v-text-field>
+                                        <v-text-field v-model="salPer" :mask="'###'" :rules="[()=>!!salPer || 'This field is required']" label="Ставка, %" required></v-text-field>
                                     </v-flex>
                                 </v-layout>
                             </v-container>
@@ -124,7 +125,7 @@
                             <v-container grid-list-md>
                                 <v-layout wrap>
                                     <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="salBase" :mask="'#######'" :rules="[()=>!!salBase || 'This field is required']" :error-messages="errorMessages" label="База, руб" required></v-text-field>
+                                        <v-text-field v-model="salBase" :mask="'#######'" :rules="[()=>!!salBase || 'This field is required']" label="База, руб" required></v-text-field>
                                     </v-flex>
                                 </v-layout>
                             </v-container>
@@ -162,7 +163,7 @@
                             <v-container grid-list-md>
                                 <v-layout wrap>
                                     <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="adv" :mask="'#######'" :rules="[()=>!!adv || 'This field is required']" :error-messages="errorMessages" label="Аванс, руб" required></v-text-field>
+                                        <v-text-field v-model="adv" :mask="'#######'" :rules="[()=>!!adv || 'This field is required']" label="Аванс, руб" required></v-text-field>
                                     </v-flex>
                                 </v-layout>
                             </v-container>
@@ -199,16 +200,16 @@
                         <v-card-text>
                             <v-form grid-list-md>
                                 <v-layout wrap>
-                                    <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="empName" :rules="[()=>!!empName || 'This field is required']" :error-messages="errorMessages" label="Сотрудник" required></v-text-field>
+                                    <v-flex xs12 sm6 md4 style="padding: 5px;">
+                                        <v-text-field v-model="empName" :rules="[()=>!!empName || 'This field is required']" label="Сотрудник" required></v-text-field>
                                     </v-flex>
-                                    <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="compName" :rules="[()=>!!compName || 'This field is required']" :error-messages="errorMessages" label="Компания" required></v-text-field>
+                                    <v-flex xs12 sm6 md4 style="padding: 5px;">
+                                        <v-text-field v-model="compName" :rules="[()=>!!compName || 'This field is required']" label="Компания" required></v-text-field>
                                     </v-flex>
-                                    <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="pos" :rules="[()=>!!pos || 'This field is required']" :error-messages="errorMessages" label="Должность" required></v-text-field>
+                                    <v-flex xs12 sm6 md4 style="padding: 5px;">
+                                        <v-text-field v-model="pos" :rules="[()=>!!pos || 'This field is required']" label="Должность" required></v-text-field>
                                     </v-flex>
-                                    <v-flex xs12 sm6 md4>
+                                    <v-flex xs12 sm6 md4 style="padding: 5px;">
                                         <v-menu
                                                 ref="menu"
                                                 v-model="menu"
@@ -225,7 +226,6 @@
                                                 <v-text-field
                                                         v-model="date"
                                                         :rules="[()=>!!date || 'This field is required']"
-                                                        :error-messages="errorMessages"
                                                         label="Дата приёма"
                                                         prepend-icon="event"
                                                         readonly
@@ -239,17 +239,17 @@
                                             </v-date-picker>
                                         </v-menu>
                                     </v-flex>
-                                    <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="sal" :mask="'#######'" :rules="[()=>!!sal || 'This field is required']" :error-messages="errorMessages" label="Ставка, руб" required></v-text-field>
+                                    <v-flex xs12 sm6 md4 style="padding: 5px;">
+                                        <v-text-field v-model="sal" :mask="'#######'" :rules="[()=>!!sal || 'This field is required']" label="Ставка, руб" required></v-text-field>
                                     </v-flex>
-                                    <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="salPer" :mask="'###'" :rules="[()=>!!salPer || 'This field is required']" :error-messages="errorMessages" label="Ставка, %" required></v-text-field>
+                                    <v-flex xs12 sm6 md4 style="padding: 5px;">
+                                        <v-text-field v-model="salPer" :mask="'###'" :rules="[()=>!!salPer || 'This field is required']" label="Ставка, %" required></v-text-field>
                                     </v-flex>
-                                    <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="salBase" :mask="'#######'" :rules="[()=>!!salBase || 'This field is required']" :error-messages="errorMessages" label="База" required></v-text-field>
+                                    <v-flex xs12 sm6 md4 style="padding: 5px;">
+                                        <v-text-field v-model="salBase" :mask="'#######'" :rules="[()=>!!salBase || 'This field is required']" label="База" required></v-text-field>
                                     </v-flex>
-                                    <v-flex xs12 sm6 md4>
-                                        <v-text-field v-model="adv" :mask="'#######'" :rules="[()=>!!adv || 'This field is required']" :error-messages="errorMessages" label="Аванс, руб" required></v-text-field>
+                                    <v-flex xs12 sm6 md4 style="padding: 5px;">
+                                        <v-text-field v-model="adv" :mask="'#######'" :rules="[()=>!!adv || 'This field is required']" label="Аванс, руб" required></v-text-field>
                                     </v-flex>
                                 </v-layout>
                             </v-form>
@@ -268,7 +268,9 @@
                                     color="success"
                                     flat
                                     @click="neDial = false; addEmployee();"
-                                    :disabled="empName=='' && compName=='' && pos=='' && sal==null && salPer==null && salBase==null && adv==null"
+                                    :disabled="empName=='' || compName=='' || pos==''
+                                    || sal==null || salPer==null || salBase==null || adv==null
+                                    || sal=='' || salPer=='' || salBase=='' || adv==''"
                             >
                                 Принять
                             </v-btn>
@@ -293,9 +295,7 @@
                 salDial: false,
                 baseDial:false,
                 adDial: false,
-                salDialName: "",
-                baseDialName:"",
-                adDialName: "",
+                dialId: null,
                 neDial: false,
                 date: new Date().toISOString().substr(0, 10),
                 menu: false,
@@ -330,30 +330,32 @@
             allEmployees: gql`
                 query {
                     allEmployees {
-                        name,
-                        companyName,
-                        positionName,
-                        hireDate,
-                        fireDate,
-                        salary,
-                        fraction,
-                        base,
-                        advance,
+                        id
+                        name
+                        companyName
+                        positionName
+                        hireDate
+                        fireDate
+                        salary
+                        fraction
+                        base
+                        advance
                         byHours
                     }
                 }`,
             getNotFiredEmployees: gql`
                 query {
                     getNotFiredEmployees {
-                        name,
-                        companyName,
-                        positionName,
-                        hireDate,
-                        fireDate,
-                        salary,
-                        fraction,
-                        base,
-                        advance,
+                        id
+                        name
+                        companyName
+                        positionName
+                        hireDate
+                        fireDate
+                        salary
+                        fraction
+                        base
+                        advance
                         byHours
                     }
                 }`
@@ -361,6 +363,11 @@
         watch: {
             selected: function(val) {
                 this.fireText = val.length > 1?'Снять с должностей':'Снять с должности';
+                for (var i = 0; i < this.selected.length; i++)
+                {
+                    if (this.selected[i].fireDate != null)
+                        delete this.selected[i];
+                }
             }
         },
         methods: {
@@ -418,27 +425,27 @@
                 });
             },
             changeSalary() {
-                const salDialName = this.salDialName;
+                const dialId = this.dialId;
                 const sal = this.sal;
                 const salPer = this.salPer;
 
-                this.salDialName = '';
+                this.dialId = null;
                 this.salPer = null;
                 this.salBase = null;
 
                 this.$apollo.mutate({
                     mutation: gql`
-                        mutation($name: String, $salary: Int, $fraction: Int){
-                          salaryMutation(name: $name, salary: $salary, fraction: $fraction) {
+                        mutation($id: ID, $salary: Int, $fraction: Int){
+                          salaryMutation(id: $id, salary: $salary, fraction: $fraction) {
                             employee {
-                              name
+                              id
                               salary
                               fraction
                             }
                           }
                         }`,
                     variables: {
-                        name: salDialName,
+                        id: dialId,
                         salary: sal,
                         fraction: salPer
                     }
@@ -448,24 +455,24 @@
                 });
             },
             changeBase() {
-                const baseDialName = this.baseDialName;
+                const dialId = this.dialId;
                 const salBase = this.salBase;
 
-                this.baseDialName = '';
+                this.dialId = null;
                 this.salBase = null;
 
                 this.$apollo.mutate({
                     mutation: gql`
-                        mutation($name: String, $base: Int){
-                          baseMutation(name: $name, base: $base) {
+                        mutation($id: ID, $base: Int){
+                          baseMutation(id: $id, base: $base) {
                             employee {
-                              name
+                              id
                               base
                             }
                           }
                         }`,
                     variables: {
-                        name: baseDialName,
+                        id: dialId,
                         base: salBase
                     }
                 }).then(() => {
@@ -474,24 +481,24 @@
                 });
             },
             changeAdvance() {
-                const adDialName = this.adDialName;
+                const dialId = this.dialId;
                 const adv = this.adv;
 
-                this.adDialName = '';
+                this.dialId = null;
                 this.adv = null;
 
                 this.$apollo.mutate({
                     mutation: gql`
-                        mutation($name: String, $advance: Int){
-                          advanceMutation(name: $name, advance: $advance) {
+                        mutation($id: ID, $advance: Int){
+                          advanceMutation(id: $id, advance: $advance) {
                             employee {
-                              name
+                              id
                               advance
                             }
                           }
                         }`,
                     variables: {
-                        name: adDialName,
+                        id: dialId,
                         advance: adv
                     }
                 }).then(() => {
@@ -499,48 +506,50 @@
                     this.$apollo.queries.getNotFiredEmployees.refetch();
                 });
             },
-            switchByHour(name, bH) {
+            switchByHour(id, bH) {
                 this.$apollo.mutate({
                     mutation: gql`
-                        mutation($name: String, $byHours: Boolean){
-                          byHoursSwitchMutation(name: $name, byHours: $byHours) {
+                        mutation($id: ID, $byHours: Boolean){
+                          byHoursSwitchMutation(id: $id, byHours: $byHours) {
                             employee {
-                              name
+                              id
                               byHours
                             }
                           }
                         }`,
                     variables: {
-                        name: name,
+                        id: id,
                         byHours: bH
                     }
-                }).then(() => {
+                })/*.then(() => {
                     this.$apollo.queries.allEmployees.refetch();
                     this.$apollo.queries.getNotFiredEmployees.refetch();
-                });
+                })*/;
             },
             fireSomePeople() {
-                var name, i;
+                var id, i;
                 for (i = 0; i < this.selected.length; i++) {
-                    name = this.selected[i].name;
+                    id = this.selected[i].id;
                     this.$apollo.mutate({
                         mutation: gql`
-                            mutation($name: String){
-                              fireMenMutation(name: $name) {
+                            mutation($id: ID){
+                              fireMenMutation(id: $id) {
                                 employee {
-                                  name
+                                  id
                                   fireDate
                                 }
                               }
                             }`,
                         variables: {
-                            name: name
+                            id: id
                         }
                     }).then(() => {
                         this.$apollo.queries.allEmployees.refetch();
                         this.$apollo.queries.getNotFiredEmployees.refetch();
                     });
                 }
+
+                this.selected = [];
             },
             firedOrNot(data) {
                 return data?this.allEmployees:this.getNotFiredEmployees;
