@@ -55,14 +55,14 @@ class EmployeeMutation(graphene.Mutation):
 		
 class SalaryMutation(graphene.Mutation):
 	class Arguments:
-		name = graphene.String()
+		id = graphene.ID()
 		salary = graphene.Int()
 		fraction = graphene.Int()
 
 	employee = graphene.Field(EmployeeType)
 	
 	def mutate(self, info, **kwargs):
-		employee = Employee.objects.get(name=kwargs['name'])
+		employee = Employee.objects.get(id=kwargs['id'])
 		employee.salary = kwargs['salary']
 		employee.fraction = kwargs['fraction']
 		employee.save()
@@ -71,13 +71,13 @@ class SalaryMutation(graphene.Mutation):
 
 class BaseMutation(graphene.Mutation):
 	class Arguments:
-		name = graphene.String()
+		id = graphene.ID()
 		base = graphene.Int()
 
 	employee = graphene.Field(EmployeeType)
 	
 	def mutate(self, info, **kwargs):
-		employee = Employee.objects.get(name=kwargs['name'])
+		employee = Employee.objects.get(id=kwargs['id'])
 		employee.base = kwargs['base']
 		employee.save()
 		
@@ -85,13 +85,13 @@ class BaseMutation(graphene.Mutation):
 
 class AdvanceMutation(graphene.Mutation):
 	class Arguments:
-		name = graphene.String()
+		id = graphene.ID()
 		advance = graphene.Int()
 
 	employee = graphene.Field(EmployeeType)
 	
 	def mutate(self, info, **kwargs):
-		employee = Employee.objects.get(name=kwargs['name'])
+		employee = Employee.objects.get(id=kwargs['id'])
 		employee.advance = kwargs['advance']
 		employee.save()
 		
@@ -100,13 +100,13 @@ class AdvanceMutation(graphene.Mutation):
 
 class ByHoursSwitchMutation(graphene.Mutation):
 	class Arguments:
-		name = graphene.String()
+		id = graphene.ID()
 		by_hours = graphene.Boolean()
 	
 	employee = graphene.Field(EmployeeType)
 	
 	def mutate(self, info, **kwargs):
-		employee = Employee.objects.get(name=kwargs['name'])
+		employee = Employee.objects.get(id=kwargs['id'])
 		employee.by_hours = kwargs['by_hours']
 		employee.save()
 		
@@ -114,12 +114,12 @@ class ByHoursSwitchMutation(graphene.Mutation):
 
 class FireMenMutation(graphene.Mutation):
 	class Arguments:
-		name = graphene.String()
+		id = graphene.ID()
 	
 	employee = graphene.Field(EmployeeType)
 	
 	def mutate(self, info, **kwargs):
-		employee = Employee.objects.get(name=kwargs['name'])
+		employee = Employee.objects.get(id=kwargs['id'])
 		employee.fire_date = date.today()
 		employee.save()
 		
