@@ -45,7 +45,7 @@
                                         v-model="props.selected"
                                         primary
                                         hide-details
-                                        :hidden="props.item.fireDate"
+                                        :hidden="isFired(props.item.fireDate)"
                                 ></v-checkbox>
                             </td>
                             <td class="text-xs-right">{{ props.item.name }}</td>
@@ -60,7 +60,7 @@
                                 <v-checkbox
                                         v-model="props.item.byHours"
                                         hide-details
-                                        :disabled="props.item.fireDate"
+                                        :disabled="isFired(props.item.fireDate)"
                                         @change="switchByHour(props.item.id, props.item.byHours)"
                                 ></v-checkbox>
                             </td>
@@ -571,6 +571,9 @@
                 else {
                     return data;
                 }
+            },
+            isFired(data) {
+                return data == null || data == "" ? false : true;
             }
         }
     }
