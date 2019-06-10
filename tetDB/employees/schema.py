@@ -17,7 +17,7 @@ class EmployeeMutation(graphene.Mutation):
 		company_name = graphene.String()
 		position_name = graphene.String()
 		hire_date = graphene.String()
-		fire_date = graphene.String()
+		fire_date = graphene.String(required=False)
 		salary = graphene.Int()
 		fraction = graphene.Int()
 		base = graphene.Int()
